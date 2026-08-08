@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard | TenderAI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .search-bar { width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 2rem; outline: none; font-size: 1rem; }
+        .search-bar:focus { border-color: var(--primary); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
+        .stat-card h4 { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .stat-card p { font-size: 1.5rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">TenderAI.</div>
+        <nav class="nav-links">
+            <a href="upload.html">Upload NIT Document</a>
+            <a href="leaderboard.html" class="active">Live Leaderboard</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <h1 class="header-title">Live Evaluation Leaderboard</h1>
+        <p class="header-sub">Search a tender reference to view the AI benchmark and incoming bids.</p>
+
+        <input type="text" id="searchReference" class="search-bar" placeholder="Enter Tender Reference (e.g., CCE(EN)/DEL/TF-09...)">
+        <button class="btn" id="searchBtn" style="width: auto; margin-bottom: 2rem;">Fetch Data</button>
+
+        <!-- Benchmark Display -->
+        <div id="dashboardData" style="display: none; animation: fadeIn 0.5s ease-out;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Required EMD</h4>
+                    <p>₹<span id="dashEmd"></span></p>
+                </div>
+                <div class="stat-card">
+                    <h4>Min. Turnover</h4>
+                    <p>₹<span id="dashTurnover"></span></p>
+                </div>
+                <div class="stat-card">
+                    <h4>Min. Service Charge</h4>
+                    <p><span id="dashCharge"></span>%</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 1.5rem;">Incoming Bids (Live Webhook via n8n)</h3>
+                <!-- We added the id="bidsContainer" here -->
+                <div id="bidsContainer">
+                    <p style="color: var(--text-muted);">Waiting for email submissions...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tender Evaluation Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-grid">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <h2>TenderAI</h2>
+            <ul>
+                <li class="active">Live Feed</li>
+                <li>Active Evaluations</li>
+                <li>Audit Logs</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header>
+                <h1>Tender Evaluation Workspace</h1>
+                <p>Active Ref: CCE(EN)/DEL/TF-09/PRAYAG/26-27/5109</p>
+            </header>
+
+            <!-- Dual-Channel Ingestion & Upload Zone -->
+            <section class="upload-section">
+                <h3>Dual-Channel Bid Ingestion Zone</h3>
+                <div class="dropzone">
+                    <p>Drag & Drop vendor ZIP/PDF packages here (or received via Gmail webhook)</p>
+                </div>
+            </section>
+
+            <!-- Ranked Shortlist Grid -->
+            <section class="shortlist-section">
+                <h3>Ranked Vendor Shortlist</h3>
+                <div class="card-grid">
+                    <div class="vendor-card rank-1">
+                        <h4>1. Alpha Facility Management</h4>
+                        <p class="status pass">Status: TQ Qualified (L1)</p>
+                        <p>Score: 94/100</p>
+                        <button class="inspect-btn">Open Multi-Modal Inspector</button>
+                    </div>
+                    <div class="vendor-card rank-2">
+                        <h4>2. Apex Infrastructure</h4>
+                        <p class="status pass">Status: TQ Qualified (L2)</p>
+                        <p>Score: 88/100</p>
+                        <button class="inspect-btn">Open Multi-Modal Inspector</button>
+                    </div>
+                    <div class="vendor-card rank-3 risk">
+                        <h4>3. Shield Security Services</h4>
+                        <p class="status fail">Status: Flagged by Risk Agent</p>
+                        <p>Score: 42/100 (Debarred Registry Match)</p>
+                        <button class="inspect-btn warning">View Citation Box</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+</html>

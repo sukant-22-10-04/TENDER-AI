@@ -1,1 +1,1 @@
-# TENDER-AI
+# TenderAI

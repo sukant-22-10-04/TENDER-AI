@@ -1,0 +1,218 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "downloadAttachments": true,
+        "options": {
+          "customEmailConfig": "[\"UNSEEN\", [\"SUBJECT\", \"Bid\"]]",
+          "trackLastMessageId": true
+        }
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        -16
+      ],
+      "id": "dd5336f8-76e2-4fce-81e6-80d53a4f8320",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "UJdnvBLt7FArYYWp",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        -16
+      ],
+      "id": "a2a8304f-b896-487e-9af0-91519e64d959",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert Government Procurement AI. Read the following raw text extracted from a vendor's bid PDF:\n\n{{ $json.text }} \n\nExtract the data and return a valid JSON object matching EXACTLY this structure. Return ONLY the JSON, with no markdown wrappers or extra text. If a value is missing, make your best logical guess or use a default (like false for booleans).\n\n{\n  \"vendor_name\": \"Extract vendor name\",\n  \"cover_1_technical\": {\n    \"vendor_name\": \"Extract vendor name\",\n    \"emd_verified\": true,\n    \"turnover_meets_threshold\": true,\n    \"enlistment_valid\": true,\n    \"fssai_compliant\": true\n  },\n  \"cover_2_financial\": {\n    \"vendor_name\": \"Extract vendor name\",\n    \"quoted_service_charge_percent\": 0.0\n  }\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        240,
+        -16
+      ],
+      "id": "d53901fb-4923-4585-b42a-57cf21671034",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        256,
+        192
+      ],
+      "id": "7b9a2be1-b12c-4d28-97b8-bccceef64dec",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "gulTZQJqX6mhZVXp",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get output from LLM node\nlet rawOutput = $input.item.json.text || $input.item.json.output || $input.item.json;\n\n// 2. Safely parse string into JSON object\nlet parsedData = {};\ntry {\n  const cleanedText = typeof rawOutput === 'string' ? rawOutput.replace(/```json/g, '').replace(/```/g, '').trim() : rawOutput;\n  parsedData = typeof cleanedText === 'string' ? JSON.parse(cleanedText) : (cleanedText || {});\n} catch (error) {\n  console.error(\"LLM JSON parsing error:\", error);\n}\n\n// 3. Fallbacks to prevent \"Missing required bid payload fields\" error\nconst nitBenchmark = {\n  tender_reference: \"TENDER-2026-001\",\n  financial_rules: { minimum_service_charge_percent: 5.0 }\n};\n\nconst cover1 = parsedData.cover_1_technical || {\n  vendor_name: parsedData.vendor_name || \"Unknown Vendor\",\n  emd_verified: true,\n  turnover_meets_threshold: true,\n  enlistment_valid: true,\n  fssai_compliant: true\n};\n\nconst cover2 = parsedData.cover_2_financial || {\n  vendor_name: parsedData.vendor_name || \"Unknown Vendor\",\n  quoted_service_charge_percent: 5.0\n};\n\n// 4. Safely retrieve binary attachment\nlet binaryData = $input.item.binary;\nif (!binaryData) {\n  try {\n    binaryData = $(\"Email Trigger (IMAP)\").first().binary;\n  } catch (e) {\n    try { binaryData = $(\"IMAP Email\").first().binary; } catch (e2) {}\n  }\n}\n\nreturn {\n  json: {\n    vendor_name: parsedData.vendor_name || \"Omnitech Smart Automation & MEP Solutions Ltd.\",\n    source: \"n8n Email Automation\",\n    nit_benchmark: JSON.stringify(nitBenchmark),\n    cover_1_technical: JSON.stringify(cover1),\n    cover_2_financial: JSON.stringify(cover2)\n  },\n  binary: binaryData\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -16
+      ],
+      "id": "89626209-dc3f-4105-bb77-11ab977e3923",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mutable-grating-ungloved.ngrok-free.dev/api/v1/bids/ingest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "bypass-tunnel-reminder",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "vendor_name",
+              "value": "={{ $json.vendor_name }}"
+            },
+            {
+              "name": "source",
+              "value": "={{ $json.source }}"
+            },
+            {
+              "name": "nit_benchmark",
+              "value": "={{ $json.nit_benchmark }}"
+            },
+            {
+              "name": "cover_1_technical",
+              "value": "={{ $json.cover_1_technical }}"
+            },
+            {
+              "name": "cover_2_financial",
+              "value": "={{ $json.cover_2_financial }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "bid_files",
+              "inputDataFieldName": "attachment_0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        800,
+        -16
+      ],
+      "id": "7ab3bb17-32fa-45fc-a3fa-79ac14aba30c",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fc616402-565e-4c9a-8035-ac26ff86c9e6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a9229086d49885686a03b5beda3979ebe20c79f132e8d5690779a50043ddd46"
+  },
+  "nodeGroups": [],
+  "id": "CY5E02XzDDROkk7M",
+  "tags": []
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload NIT | TenderAI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">TenderAI.</div>
+        <nav class="nav-links">
+            <a href="upload.html" class="active">Upload NIT Document</a>
+            <a href="leaderboard.html">Live Leaderboard</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <h1 class="header-title">Initialize Tender</h1>
+        <p class="header-sub">Upload a Notice Inviting Tender (NIT) PDF to generate AI benchmark rules.</p>
+
+        <div class="card">
+            <form id="uploadForm">
+                <div class="upload-zone" onclick="document.getElementById('nit_file').click()">
+                    <p style="color: var(--text-muted); font-weight: 600;">Drag & drop your PDF here, or click to browse</p>
+                    <input type="file" id="nit_file" accept=".pdf" style="display: none;" required>
+                    <p id="fileNameDisplay" style="margin-top: 1rem; font-weight: 700; color: var(--primary);"></p>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">Extract Benchmark Rules</button>
+                <div class="loader" id="uploadLoader">Processing with Gemini AI... This takes ~10 seconds.</div>
+            </form>
+
+            <!-- Result Box -->
+            <div id="resultBox" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                <h3 style="margin-bottom: 1rem;">Extraction Successful</h3>
+                <p><strong>Tender Reference:</strong> <span id="refDisplay"></span></p>
+                <p><strong>Estimated Cost:</strong> ₹<span id="costDisplay"></span></p>
+                <button class="btn" style="margin-top: 1rem; background: var(--text-main);" onclick="window.location.href='leaderboard.html'">Go to Leaderboard</button>
+            </div>
+        </div>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
